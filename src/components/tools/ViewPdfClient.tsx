@@ -20,7 +20,7 @@ export default function ViewPdfClient() {
 
 
     const activeFile = files[activeFileIndex] || null;
-    const { pdfProxy, pageCount, loading } = usePDF(activeFile);
+    const { pdfProxy, pageCount, loading, error } = usePDF(activeFile);
 
     const [currentPage, setCurrentPage] = useState(1);
     const [scale, setScale] = useState<number | null>(null);
@@ -203,29 +203,20 @@ export default function ViewPdfClient() {
             )}
 
             {!activeFile ? (
-                <RetroCard className="max-w-2xl mx-auto text-center py-12">
-                    <div className="inline-flex items-center justify-center w-20 h-20 bg-[#A3E635] border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] mb-8">
-                        <Eye className="w-10 h-10" />
-                    </div>
-                    <h2 className="text-2xl font-display mb-3">Upload PDF to View</h2>
-                    <p className="text-gray-600 font-sans mb-8 max-w-md mx-auto">
-                        Securely view and preview PDF documents directly in your browser.
-                    </p>
-                    <div className="max-w-md mx-auto">
-                        <RetroFileUploader
-                            onFilesSelected={handleFilesSelected}
-                            multiple={true}
-                            accept={{ "application/pdf": [".pdf"] }}
-                            title="Select PDF Files"
-                            description="Drag & drop or click to browse"
-                            variant="lime"
-                        />
-                    </div>
+                <RetroCard variant="default">
+                    <RetroFileUploader
+                        onFilesSelected={handleFilesSelected}
+                        multiple={true}
+                        accept={{ "application/pdf": [".pdf"] }}
+                        title="Select PDF Files"
+                        description="Drag & drop or click to browse"
+                        variant="lime"
+                    />
                 </RetroCard>
             ) : (
                 <>
                     {/* Toolbar */}
-                    <div className="sticky top-2 z-10 mb-4">
+                    <div className="sticky top-20 z-10 mb-4">
                         <div className="bg-white border-2 border-black p-2 flex items-center justify-between shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] gap-3">
                             {/* Page Navigation */}
                             <div className="flex items-center gap-0.5 border-2 border-black bg-gray-50">
@@ -248,7 +239,7 @@ export default function ViewPdfClient() {
                                                 setCurrentPage(val);
                                             }
                                         }}
-                                        className="w-10 py-1 text-center bg-transparent font-display text-sm focus:outline-none appearance-none"
+                                        className="w-10 py-1 text-center bg-transparent font-display text-sm focus:outline-none appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none m-0"
                                     />
                                     <span className="text-gray-400 text-xs font-display">/ {pageCount}</span>
                                 </div>
@@ -275,7 +266,7 @@ export default function ViewPdfClient() {
                                 >
                                     <ZoomOut className="w-3.5 h-3.5" />
                                 </button>
-                                <span className="text-xs font-display w-10 text-center select-none border-x-2 border-black bg-white py-1.5">
+                                <span className="text-xs font-display w-12 text-center select-none border-x-2 border-black bg-white py-1.5">
                                     {Math.round((scale ?? 1) * 100)}%
                                 </span>
                                 <button
@@ -302,9 +293,17 @@ export default function ViewPdfClient() {
                                 </div>
                             </div>
                         )}
+                        {error && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-gray-50/80 z-10">
+                                <div className="bg-white border-2 border-red-500 p-4 shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] flex flex-col items-center gap-2">
+                                    <span className="text-red-500 font-display font-bold">Failed to load PDF</span>
+                                    <span className="text-xs text-gray-600 font-sans">{error}</span>
+                                </div>
+                            </div>
+                        )}
                         <canvas
                             ref={canvasRef}
-                            className={`shadow-[4px_4px_0px_0px_rgba(0,0,0,0.15)] border border-gray-200 bg-white ${loading ? 'invisible' : ''}`}
+                            className={`shadow-[4px_4px_0px_0px_rgba(0,0,0,0.15)] border border-gray-200 bg-white ${loading || error ? 'invisible' : ''}`}
                         />
                     </div>
                 </>

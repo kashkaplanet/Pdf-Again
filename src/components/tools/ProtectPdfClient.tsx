@@ -44,21 +44,13 @@ export default function ProtectPdfClient() {
         setError(null);
 
         try {
-            const formData = new FormData();
-            formData.append("file", file);
-            formData.append("password", password);
+            const arrayBuffer = await file.arrayBuffer();
+            const pdfBytes = new Uint8Array(arrayBuffer);
 
-            const response = await fetch("/api/protect-pdf", {
-                method: "POST",
-                body: formData,
-            });
+            const { encryptPDF } = await import('@pdfsmaller/pdf-encrypt-lite');
+            const encryptedPdf = await encryptPDF(pdfBytes, password, password);
 
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => null);
-                throw new Error(errorData?.error || "Failed to protect PDF");
-            }
-
-            const blob = await response.blob();
+            const blob = new Blob([encryptedPdf as BlobPart], { type: "application/pdf" });
             const url = URL.createObjectURL(blob);
             const link = document.createElement("a");
             link.href = url;

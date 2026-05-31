@@ -70,7 +70,7 @@ export function ToolPageWrapper({ title, description, icon: Icon, color, childre
             {children}
 
             {/* Rich Content Section (How-to, Features, FAQ) */}
-            {toolContentData && <ToolContentSection content={toolContentData} />}
+            {toolContentData && !["ORGANIZE PDF", "EDIT PDF", "OPTIMIZE PDF", "PDF SECURITY", "CONVERT TO PDF", "CONVERT FROM PDF", "ENCODING & BINARY", "VIEW & COMPARE"].includes(sectionInfo?.section.title || "") && <ToolContentSection content={toolContentData} />}
 
             {/* Related Tools */}
             {relatedTools.length > 0 && (

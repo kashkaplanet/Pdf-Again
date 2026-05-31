@@ -144,7 +144,7 @@ export default function HtmlToPdfClient() {
             icon={Globe}
             color="cyan"
         >
-            <RetroCard className="max-w-xl mx-auto">
+            <RetroCard>
                 <div className="flex items-center space-x-4 mb-6 p-4 bg-[#22D3EE]/10 border-2 border-black">
                     <div className="p-3 bg-[#22D3EE] border-2 border-black">
                         <Globe className="w-6 h-6" />

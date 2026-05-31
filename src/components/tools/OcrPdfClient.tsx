@@ -51,85 +51,65 @@ export default function OcrPdfClient() {
         const abortController = new AbortController();
         abortControllerRef.current = abortController;
 
+        let worker: any = null;
+
         try {
-            const formData = new FormData();
-            formData.append("file", file);
-            formData.append("lang", "eng"); // Default to English for now
+            const arrayBuffer = await file.arrayBuffer();
+            const pdfjsLib = await import("pdfjs-dist");
+            pdfjsLib.GlobalWorkerOptions.workerSrc = "/workers/pdf.worker.min.mjs";
 
-            const response = await fetch("/api/ocr-pdf", {
-                method: "POST",
-                body: formData,
-                signal: abortController.signal,
-            });
+            const pdfDocument = await pdfjsLib.getDocument({ data: new Uint8Array(arrayBuffer) }).promise;
+            setProgress({ current: 0, total: pdfDocument.numPages });
 
-            if (!response.ok || !response.body) {
-                if (response.status === 429) {
-                    throw new Error("Too many requests. Please try again in a minute.");
-                }
-                throw new Error(response.statusText || "Failed to start OCR processing");
-            }
+            const { createWorker } = await import('tesseract.js');
+            worker = await createWorker('eng');
 
-            const reader = response.body.getReader();
-            const decoder = new TextDecoder();
-            let buffer = "";
+            for (let i = 1; i <= pdfDocument.numPages; i++) {
+                if (abortController.signal.aborted) break;
 
-            while (true) {
-                const { done, value } = await reader.read();
+                try {
+                    const page = await pdfDocument.getPage(i);
+                    const viewport = page.getViewport({ scale: 2.0 });
 
-                if (done) {
-                    break;
-                }
+                    const canvas = document.createElement("canvas");
+                    canvas.width = viewport.width;
+                    canvas.height = viewport.height;
+                    const context = canvas.getContext("2d");
+                    if (!context) throw new Error("Could not create canvas context");
 
-                const chunk = decoder.decode(value, { stream: true });
-                buffer += chunk;
+                    await page.render({
+                        canvasContext: context,
+                        viewport: viewport,
+                    }).promise;
 
-                const lines = buffer.split("\n");
-                // Keep the last part in the buffer as it might be incomplete
-                buffer = lines.pop() || "";
+                    // tesseract.js accepts canvas elements directly in the browser!
+                    const { data: { text } } = await worker.recognize(canvas);
 
-                for (const line of lines) {
-                    if (!line.trim()) continue;
-                    try {
-                        const json = JSON.parse(line);
-
-                        if (json.type === "meta") {
-                            setProgress({ current: 0, total: json.totalPages });
-                        } else if (json.type === "page" || !json.type) { // Handle legacy/new format
-
-                            // Update progress
-                            if (json.page) {
-                                setProgress(prev => {
-                                    if (!prev) return { current: 1, total: 0 }; // Should be set by meta, but fallback
-                                    return { ...prev, current: prev.current + 1 };
-                                });
-                            }
-
-                            if (json.error) {
-                                setExtractedText((prev) => prev + `\n[Page ${json.page} Error: ${json.error}]\n`);
-                            } else {
-                                setExtractedText((prev) => prev + (json.text || "") + "\n");
-                            }
-                        } else if (json.error) {
-                            // Top level error
-                            if (json.error === "Too many requests. Please try again later.") {
-                                throw new Error(json.error);
-                            }
-                            setExtractedText((prev) => prev + `\n[Error: ${json.error}]\n`);
-                        }
-                    } catch {
-                        console.warn("Failed to parse chunk:", line);
-                    }
+                    setProgress(prev => prev ? { ...prev, current: i } : { current: i, total: pdfDocument.numPages });
+                    setExtractedText(prev => prev + text + "\n");
+                    
+                    page.cleanup();
+                } catch (pageError) {
+                    console.error(`Page ${i} OCR failed:`, pageError);
+                    setExtractedText(prev => prev + `\n[Page ${i} Error: ${pageError instanceof Error ? pageError.message : "Failed to process"}]\n`);
                 }
             }
 
+            if (worker) {
+                await worker.terminate();
+                worker = null;
+            }
         } catch (err) {
             if (err instanceof Error && err.name === 'AbortError') {
                 console.log("OCR cancelled");
-                return; // Handled in handleCancel
+                return;
             }
             console.error("OCR failed:", err);
             setError(err instanceof Error ? err.message : "OCR processing failed. Please try again.");
         } finally {
+            if (worker) {
+                await worker.terminate().catch(() => {});
+            }
             if (abortControllerRef.current === abortController) {
                 setIsProcessing(false);
                 abortControllerRef.current = null;

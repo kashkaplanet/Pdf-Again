@@ -80,18 +80,20 @@ export default function BinaryToPdfClient() {
             icon={Shield}
             color="indigo"
         >
-            <RetroCard className="max-w-2xl mx-auto py-12" variant="default">
-                <div className="mb-8">
-                    {!file ? (
-                        <RetroFileUploader
-                            onFilesSelected={handleFilesSelected}
-                            accept={{ "text/plain": [".txt", ".bin.txt"] }}
-                            multiple={false}
-                            title="Upload Binary Text File"
-                            description="Select a .bin.txt file to restore back to PDF"
-                            variant="indigo"
-                        />
-                    ) : (
+            {!file ? (
+                <RetroCard variant="default">
+                    <RetroFileUploader
+                        onFilesSelected={handleFilesSelected}
+                        accept={{ "text/plain": [".txt", ".bin.txt"] }}
+                        multiple={false}
+                        title="Upload Binary Text File"
+                        description="Select a .bin.txt file to restore back to PDF"
+                        variant="indigo"
+                    />
+                </RetroCard>
+            ) : (
+                <RetroCard variant="default">
+                    <div className="mb-8">
                         <RetroFileItem
                             name={file.name}
                             size={(file.size / 1024).toFixed(1) + " KB"}
@@ -99,49 +101,49 @@ export default function BinaryToPdfClient() {
                             onRemove={handleRemoveFile}
                             color="indigo"
                         />
-                    )}
-                </div>
-
-                {error && (
-                    <div className="mb-6 p-4 border-2 border-black bg-red-100 text-red-800 font-display flex items-center gap-2">
-                        <AlertTriangle className="w-5 h-5" />
-                        {error}
                     </div>
-                )}
 
-                <div className="mt-8 flex gap-4">
-                    {convertedUrl ? (
-                        <>
+                    {error && (
+                        <div className="mb-6 p-4 border-2 border-black bg-red-100 text-red-800 font-display flex items-center gap-2">
+                            <AlertTriangle className="w-5 h-5" />
+                            {error}
+                        </div>
+                    )}
+
+                    <div className="mt-8 flex gap-4">
+                        {convertedUrl ? (
+                            <>
+                                <RetroActionButton
+                                    label="Download .pdf"
+                                    isProcessing={false}
+                                    processingText=""
+                                    onClick={handleDownload}
+                                    color="indigo"
+                                    icon={<Download className="w-5 h-5" />}
+                                />
+                                <RetroActionButton
+                                    label="Convert Another"
+                                    isProcessing={false}
+                                    processingText=""
+                                    onClick={handleRemoveFile}
+                                    color="default"
+                                    icon={<ArrowRight className="w-5 h-5" />}
+                                />
+                            </>
+                        ) : (
                             <RetroActionButton
-                                label="Download .pdf"
-                                isProcessing={false}
-                                processingText=""
-                                onClick={handleDownload}
+                                label="Restore to PDF"
+                                isProcessing={isConverting}
+                                processingText="Restoring..."
+                                onClick={handleConvert}
+                                disabled={!file}
                                 color="indigo"
-                                icon={<Download className="w-5 h-5" />}
-                            />
-                            <RetroActionButton
-                                label="Convert Another"
-                                isProcessing={false}
-                                processingText=""
-                                onClick={handleRemoveFile}
-                                color="default"
                                 icon={<ArrowRight className="w-5 h-5" />}
                             />
-                        </>
-                    ) : (
-                        <RetroActionButton
-                            label="Restore to PDF"
-                            isProcessing={isConverting}
-                            processingText="Restoring..."
-                            onClick={handleConvert}
-                            disabled={!file}
-                            color="indigo"
-                            icon={<ArrowRight className="w-5 h-5" />}
-                        />
-                    )}
-                </div>
-            </RetroCard>
+                        )}
+                    </div>
+                </RetroCard>
+            )}
         </ToolPageWrapper>
     );
 }

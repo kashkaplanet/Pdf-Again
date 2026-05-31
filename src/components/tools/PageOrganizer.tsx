@@ -111,6 +111,7 @@ export function PageOrganizer({
                                                                 pdfProxy={pdfProxy}
                                                                 pageIndex={page.originalIndex}
                                                                 width={120}
+                                                                hidePageLabel={true}
                                                             />
                                                         </div>
                                                     </div>

@@ -125,11 +125,10 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <Script
+        <script
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1595077575947362"
           crossOrigin="anonymous"
-          strategy="lazyOnload"
         />
       </head>
       <body className={`${inter.variable} ${futura.variable} font-sans antialiased bg-[#FFFBE6] text-black text-lg`} suppressHydrationWarning>

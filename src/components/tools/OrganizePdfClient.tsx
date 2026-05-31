@@ -191,6 +191,7 @@ export default function OrganizePdfClient() {
                                                     pdfProxy={pdfProxy}
                                                     pageIndex={pageState.originalIndex}
                                                     width={150}
+                                                    hidePageLabel={true}
                                                 />
                                             </div>
 

@@ -1,3 +1,0 @@
-﻿Status: 500
-Full Body:
-{"error":"Internal server error during OCR","details":"Setting up fake worker failed: \"Cannot find module '\\\\unpkg.com\\pdfjs-dist@4.8.69\\build\\pdf.worker.min.mjs' imported from E:\\backup\\pdf_pdf8\\.next\\server\\vendor-chunks\\pdfjs-dist.js\"."}

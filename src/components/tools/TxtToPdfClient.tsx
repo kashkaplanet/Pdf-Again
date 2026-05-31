@@ -129,8 +129,8 @@ export default function TxtToPdfClient() {
             icon={FileText}
             color="cyan"
         >
-            <RetroCard className="max-w-2xl mx-auto">
-                {!file ? (
+            {!file ? (
+                <RetroCard>
                     <RetroFileUploader
                         onFilesSelected={handleFileSelected}
                         accept={{ "text/plain": [".txt"] }}
@@ -139,7 +139,9 @@ export default function TxtToPdfClient() {
                         description="Upload a .txt file to convert"
                         variant="cyan"
                     />
-                ) : (
+                </RetroCard>
+            ) : (
+                <RetroCard>
                     <div className="space-y-6">
                         <div className="flex items-center space-x-4 p-4 bg-[#22D3EE]/10 border-2 border-black">
                             <div className="p-3 bg-[#22D3EE] border-2 border-black">
@@ -176,8 +178,8 @@ export default function TxtToPdfClient() {
                             icon={<Download className="w-5 h-5" />}
                         />
                     </div>
-                )}
-            </RetroCard>
+                </RetroCard>
+            )}
 
             <div className="mt-6 text-center text-sm text-gray-600 font-sans">
                 <p>Supports .txt files with automatic word wrapping.</p>

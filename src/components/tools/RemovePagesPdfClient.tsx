@@ -10,11 +10,13 @@ import { usePDF } from "@/hooks/usePDF";
 import { PDFThumbnail } from "@/components/PDFThumbnail";
 import { Download, Trash2, Loader2 } from "lucide-react";
 import clsx from "clsx";
+import { VirtuosoGrid } from "react-virtuoso";
 
 export default function RemovePagesPdfClient() {
     const [file, setFile] = useState<File | null>(null);
     const { pdfProxy, pageCount, loading } = usePDF(file);
     const [pagesToRemove, setPagesToRemove] = useState<Set<number>>(new Set());
+    const [lastSelectedIndex, setLastSelectedIndex] = useState<number | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -22,6 +24,7 @@ export default function RemovePagesPdfClient() {
         if (files.length > 0) {
             setFile(files[0]);
             setPagesToRemove(new Set());
+            setLastSelectedIndex(null);
             setError(null);
         }
     };
@@ -31,16 +34,33 @@ export default function RemovePagesPdfClient() {
         accept: { "application/pdf": [".pdf"] },
     });
 
-    const togglePage = (index: number) => {
-        setPagesToRemove(prev => {
-            const newSet = new Set(prev);
-            if (newSet.has(index)) {
-                newSet.delete(index);
-            } else {
-                newSet.add(index);
-            }
-            return newSet;
-        });
+    const togglePage = (index: number, e?: React.MouseEvent) => {
+        if (e?.shiftKey && lastSelectedIndex !== null) {
+            const start = Math.min(lastSelectedIndex, index);
+            const end = Math.max(lastSelectedIndex, index);
+            
+            const isSelecting = !pagesToRemove.has(index);
+
+            setPagesToRemove(prev => {
+                const newSet = new Set(prev);
+                for (let i = start; i <= end; i++) {
+                    if (isSelecting) newSet.add(i);
+                    else newSet.delete(i);
+                }
+                return newSet;
+            });
+        } else {
+            setPagesToRemove(prev => {
+                const newSet = new Set(prev);
+                if (newSet.has(index)) {
+                    newSet.delete(index);
+                } else {
+                    newSet.add(index);
+                }
+                return newSet;
+            });
+        }
+        setLastSelectedIndex(index);
     };
 
     const handleRemovePages = async () => {
@@ -140,33 +160,43 @@ export default function RemovePagesPdfClient() {
                             )}
 
                             {pdfProxy && (
-                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 mb-8">
-                                    {Array.from({ length: pageCount }, (_, i) => (
-                                        <div
-                                            key={i}
-                                            onClick={() => togglePage(i)}
-                                            className={clsx(
-                                                "relative cursor-pointer border-2 transition-all",
-                                                pagesToRemove.has(i)
-                                                    ? "border-[#F87171] opacity-50"
-                                                    : "border-black hover:border-[#F472B6]"
-                                            )}
-                                        >
-                                            <PDFThumbnail
-                                                pdfProxy={pdfProxy}
-                                                pageIndex={i}
-                                                width={150}
-                                            />
-                                            {pagesToRemove.has(i) && (
-                                                <div className="absolute inset-0 bg-[#F87171]/20 flex items-center justify-center">
-                                                    <Trash2 className="w-8 h-8 text-[#F87171]" />
+                                <div>
+                                    <VirtuosoGrid
+                                        useWindowScroll
+                                        totalCount={pageCount}
+                                        overscan={200}
+                                        components={{
+                                            List: GridList,
+                                            Item: GridItem
+                                        }}
+                                        itemContent={(i) => (
+                                            <div
+                                                key={i}
+                                                onClick={(e) => togglePage(i, e)}
+                                                className={clsx(
+                                                    "relative cursor-pointer border-2 transition-all w-full",
+                                                    pagesToRemove.has(i)
+                                                        ? "border-[#F87171] opacity-50"
+                                                        : "border-black hover:border-[#F472B6]"
+                                                )}
+                                            >
+                                                <PDFThumbnail
+                                                    pdfProxy={pdfProxy}
+                                                    pageIndex={i}
+                                                    width={150}
+                                                    hidePageLabel={true}
+                                                />
+                                                {pagesToRemove.has(i) && (
+                                                    <div className="absolute inset-0 bg-[#F87171]/20 flex items-center justify-center">
+                                                        <Trash2 className="w-8 h-8 text-[#F87171]" />
+                                                    </div>
+                                                )}
+                                                <div className="text-center py-2 bg-white border-t-2 border-black text-sm font-display">
+                                                    Page {i + 1}
                                                 </div>
-                                            )}
-                                            <div className="text-center py-2 bg-white border-t-2 border-black text-sm font-display">
-                                                Page {i + 1}
                                             </div>
-                                        </div>
-                                    ))}
+                                        )}
+                                    />
                                 </div>
                             )}
 
@@ -188,3 +218,25 @@ export default function RemovePagesPdfClient() {
         </ToolPageWrapper>
     );
 }
+
+const GridList = React.forwardRef(({ style, children, ...props }: any, ref: any) => (
+    <div
+        ref={ref}
+        {...props}
+        style={{ ...style, display: "flex", flexWrap: "wrap", gap: "1rem" }}
+        className="mb-8"
+    >
+        {children}
+    </div>
+));
+GridList.displayName = "GridList";
+
+const GridItem = ({ children, ...props }: any) => (
+    <div
+        {...props}
+        className="w-[calc(50%-0.5rem)] sm:w-[calc(33.333%-0.66rem)] md:w-[calc(25%-0.75rem)] lg:w-[calc(20%-0.8rem)]"
+    >
+        {children}
+    </div>
+);
+GridItem.displayName = "GridItem";

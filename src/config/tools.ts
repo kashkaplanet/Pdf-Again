@@ -5,7 +5,9 @@ import {
     GitCompare, Eye, FileType, Combine, Maximize2,
     EyeOff, Info, ArrowDownUp, Receipt, Scale, Table,
     Sparkles, Zap, Shield, MessageSquare, Presentation, Landmark,
-    Binary
+    Binary, List, AlignVerticalSpaceAround, ImagePlus, Link2, Scaling,
+    Crop, Expand, ShieldCheck, FileJson, CopyPlus, MessageSquareOff, FilePlus2, LayoutGrid,
+    SplitSquareHorizontal, BookOpen, FileCode
 } from "lucide-react";
 
 import type { LucideIcon } from "lucide-react";
@@ -114,6 +116,66 @@ export const sections: Section[] = [
                     { title: "Split & Download", description: "Click 'Split PDF' to download a ZIP file containing your separated PDFs." }
                 ]
             },
+            {
+                name: "Duplicate Pages",
+                href: "/duplicate-pages",
+                icon: CopyPlus,
+                description: "Repeat specific pages multiple times for labels and tickets.",
+                tutorialSteps: [
+                    { title: "Upload PDF", description: "Select the PDF file." },
+                    { title: "Set Copies", description: "Choose to duplicate all pages uniformly, or set custom amounts per page." },
+                    { title: "Duplicate", description: "Click to create the duplicated pages." },
+                    { title: "Download", description: "Save the extended PDF." }
+                ]
+            },
+            {
+                name: "Insert Blank Pages",
+                href: "/insert-blank-pages",
+                icon: FilePlus2,
+                description: "Add blank pages to your PDF for double-sided printing.",
+                tutorialSteps: [
+                    { title: "Upload PDF", description: "Select your PDF file." },
+                    { title: "Set Positions", description: "Choose to insert after every page, at the end, or at custom page numbers." },
+                    { title: "Insert", description: "Click to generate the new document." },
+                    { title: "Download", description: "Save the PDF with inserted blank pages." }
+                ]
+            },
+            {
+                name: "N-Up PDF",
+                href: "/n-up-pdf",
+                icon: LayoutGrid,
+                description: "Combine multiple pages onto a single sheet (grid print).",
+                tutorialSteps: [
+                    { title: "Upload PDF", description: "Select the PDF file." },
+                    { title: "Configure Grid", description: "Choose 2-Up, 4-Up, etc., and select the paper size/orientation." },
+                    { title: "Combine", description: "Click to combine the pages." },
+                    { title: "Download", description: "Save the new grid PDF." }
+                ]
+            },
+            {
+                name: "Split in Half",
+                href: "/split-in-half",
+                icon: SplitSquareHorizontal,
+                description: "Cut each page down the middle to create two separate pages.",
+                tutorialSteps: [
+                    { title: "Upload PDF", description: "Select your PDF file (e.g., a scanned book)." },
+                    { title: "Set Direction", description: "Choose vertical or horizontal split and reading order." },
+                    { title: "Split", description: "Click 'Split Pages & Download'." },
+                    { title: "Download", description: "Save the separated PDF." }
+                ]
+            },
+            {
+                name: "Create Booklet",
+                href: "/create-booklet",
+                icon: BookOpen,
+                description: "Arrange pages side-by-side into printer spreads.",
+                tutorialSteps: [
+                    { title: "Upload PDF", description: "Select your PDF file." },
+                    { title: "Set Binding", description: "Choose Left or Right binding." },
+                    { title: "Arrange", description: "Click 'Create Booklet Spreads'." },
+                    { title: "Download", description: "Save the print-ready booklet." }
+                ]
+            },
         ]
     },
     {
@@ -122,6 +184,17 @@ export const sections: Section[] = [
         icon: PenTool,
         description: "Modify, annotate, and customize your PDFs",
         tools: [
+            {
+                name: "Add TOC to PDF",
+                href: "/add-bookmarks",
+                icon: List,
+                description: "Add a visual Table of Contents page to your PDF.",
+                tutorialSteps: [
+                    { title: "Upload PDF", description: "Select the PDF file." },
+                    { title: "Add Sections", description: "Define your section titles and corresponding page numbers." },
+                    { title: "Download", description: "Download your PDF with a new Table of Contents page." }
+                ]
+            },
             {
                 name: "Flatten PDF",
                 href: "/flatten-pdf",
@@ -142,6 +215,17 @@ export const sections: Section[] = [
                     { title: "Upload PDF", description: "Upload your colored PDF document." },
                     { title: "Convert", description: "The tool processes the file to remove color information." },
                     { title: "Download", description: "Download the high-quality black and white PDF." }
+                ]
+            },
+            {
+                name: "Header & Footer",
+                href: "/header-footer",
+                icon: AlignVerticalSpaceAround,
+                description: "Add custom text headers and footers to every page.",
+                tutorialSteps: [
+                    { title: "Upload PDF", description: "Upload the PDF document." },
+                    { title: "Configure", description: "Enter the text for your header and footer." },
+                    { title: "Apply", description: "Apply the text and download your stamped PDF." }
                 ]
             },
             {
@@ -216,6 +300,54 @@ export const sections: Section[] = [
                     { title: "Download", description: "Save your watermarked PDF." }
                 ]
             },
+            {
+                name: "Crop PDF",
+                href: "/crop-pdf",
+                icon: Crop,
+                description: "Trim the edges of your PDF pages by setting custom crop margins.",
+                tutorialSteps: [
+                    { title: "Upload PDF", description: "Select the PDF you want to crop." },
+                    { title: "Set Crop Values", description: "Enter how much to trim from the top, bottom, left, and right edges." },
+                    { title: "Crop", description: "Click 'Crop & Download' to apply the crop." },
+                    { title: "Download", description: "Save your cropped PDF file." }
+                ]
+            },
+            {
+                name: "Add Margins",
+                href: "/add-margins",
+                icon: Expand,
+                description: "Add white space margins around PDF pages for printing or binding.",
+                tutorialSteps: [
+                    { title: "Upload PDF", description: "Select the PDF you want to add margins to." },
+                    { title: "Set Margins", description: "Choose uniform or per-side margins and set the desired values." },
+                    { title: "Apply", description: "Click 'Add Margins & Download' to create the expanded PDF." },
+                    { title: "Download", description: "Save your PDF with new margins." }
+                ]
+            },
+            {
+                name: "Scale Pages",
+                href: "/scale-pages",
+                icon: Scaling,
+                description: "Enlarge or shrink the content of your PDF pages.",
+                tutorialSteps: [
+                    { title: "Upload PDF", description: "Select the PDF you want to scale." },
+                    { title: "Set Scale", description: "Choose a percentage (e.g., 80% to shrink) and the alignment." },
+                    { title: "Scale", description: "Click 'Scale & Download' to resize the content." },
+                    { title: "Download", description: "Save your scaled PDF." }
+                ]
+            },
+            {
+                name: "Change Background",
+                href: "/change-background",
+                icon: Palette,
+                description: "Add a solid color behind your PDF content.",
+                tutorialSteps: [
+                    { title: "Upload PDF", description: "Select your PDF file." },
+                    { title: "Pick Color", description: "Choose a background color (like yellow or dark mode gray)." },
+                    { title: "Apply", description: "Click 'Apply Color & Download'." },
+                    { title: "Download", description: "Save the colored PDF." }
+                ]
+            },
         ]
     },
     {
@@ -253,6 +385,18 @@ export const sections: Section[] = [
                     { title: "Upload File", description: "Upload the corrupt PDF file." },
                     { title: "Repair", description: "Our tool analyzes and attempts to fix the file structure." },
                     { title: "Download", description: "Save the repaired PDF to your device." }
+                ]
+            },
+            {
+                name: "Remove Annotations",
+                href: "/remove-annotations",
+                icon: MessageSquareOff,
+                description: "Strip all comments, highlights, and drawings.",
+                tutorialSteps: [
+                    { title: "Upload File", description: "Select the PDF with annotations." },
+                    { title: "Analyze", description: "Review how many annotations are detected." },
+                    { title: "Remove", description: "Click to permanently strip all annotations." },
+                    { title: "Download", description: "Save the clean PDF." }
                 ]
             },
         ]
@@ -299,6 +443,18 @@ export const sections: Section[] = [
                     { title: "Download", description: "Download the unlocked, unrestricted PDF." }
                 ]
             },
+            {
+                name: "Sanitize PDF",
+                href: "/sanitize-pdf",
+                icon: ShieldCheck,
+                description: "Strip all hidden metadata, author info, and timestamps for privacy.",
+                tutorialSteps: [
+                    { title: "Upload PDF", description: "Select the PDF you want to sanitize." },
+                    { title: "Review Metadata", description: "See all metadata fields found in your document." },
+                    { title: "Sanitize", description: "Click 'Sanitize PDF' to remove all identifying information." },
+                    { title: "Download", description: "Download the clean, anonymous PDF." }
+                ]
+            },
         ]
     },
     {
@@ -307,6 +463,17 @@ export const sections: Section[] = [
         icon: FileType,
         description: "Transform any document into PDF format",
         tools: [
+            {
+                name: "Batch Convert (ZIP)",
+                href: "/batch-convert",
+                icon: FileArchive,
+                description: "Upload a ZIP of images and merge them into one PDF.",
+                tutorialSteps: [
+                    { title: "Upload ZIP", description: "Upload a .zip file containing your image files." },
+                    { title: "Convert", description: "We will extract and merge all images." },
+                    { title: "Download", description: "Download your unified PDF." }
+                ]
+            },
             { name: "Excel to PDF", href: "/excel-to-pdf", icon: Table, description: "Convert Excel spreadsheets to PDF format.", disabled: true },
             {
                 name: "HTML to PDF",
@@ -377,8 +544,36 @@ export const sections: Section[] = [
         icon: ArrowDownUp,
         description: "Convert PDFs to other formats",
         tools: [
+            { name: "Extract Images", href: "/extract-images", icon: ImagePlus, description: "Extract all embedded images and pictures from a PDF document." },
+            { name: "Extract Form Data", href: "/extract-form-data", icon: FileJson, description: "Export interactive PDF form data to JSON." },
             { name: "PDF to Excel", href: "/pdf-to-excel", icon: Table, description: "Convert PDF tables and data to Excel spreadsheets.", disabled: true },
+            { name: "PDF to GIF", href: "/pdf-to-gif", icon: FileImage, description: "Convert PDF pages into an animated GIF." },
             { name: "PDF to JPG", href: "/pdf-to-jpg", icon: FileImage, description: "Convert PDF pages to high-quality images." },
+            {
+                name: "PDF to JSON",
+                href: "/pdf-to-json",
+                icon: FileJson,
+                description: "Extract structured text data from PDF into JSON format.",
+                tutorialSteps: [
+                    { title: "Upload PDF", description: "Select the PDF file to convert." },
+                    { title: "Configure", description: "Choose whether to include metadata and page dimensions." },
+                    { title: "Convert", description: "Click 'Convert to JSON' to extract the data." },
+                    { title: "Download", description: "Preview the JSON output, copy it, or download as a .json file." }
+                ]
+            },
+            {
+                name: "PDF to XML",
+                href: "/pdf-to-xml",
+                icon: FileCode,
+                description: "Extract text content and layout from a PDF into XML.",
+                tutorialSteps: [
+                    { title: "Upload PDF", description: "Select the PDF file to convert." },
+                    { title: "Configure", description: "Choose whether to include metadata and coordinates." },
+                    { title: "Convert", description: "Click 'Convert to XML'." },
+                    { title: "Download", description: "Preview the XML output or download the file." }
+                ]
+            },
+            { name: "PDF to Markdown", href: "/pdf-to-markdown", icon: FileText, description: "Convert PDF documents to Markdown format for easy editing." },
             { name: "PDF to ODT", href: "/pdf-to-odt", icon: FileText, description: "Convert PDF documents to OpenDocument Text format.", disabled: true },
             { name: "PDF to PNG", href: "/pdf-to-png", icon: FileImage, description: "Convert PDF pages to high-quality PNG images." },
             { name: "PDF to PPT", href: "/pdf-to-ppt", icon: Presentation, description: "Convert PDF pages to PowerPoint slides (images).", disabled: true },
@@ -422,7 +617,9 @@ export const sections: Section[] = [
         description: "View and compare PDF documents side by side",
         tools: [
             { name: "Compare PDF", href: "/compare-pdf", icon: GitCompare, description: "Compare two PDFs side-by-side for differences." },
+            { name: "Extract Links", href: "/extract-links", icon: Link2, description: "Easily extract all hyperlinks and URLs from a PDF document." },
             { name: "Legal Comparison", href: "/legal-comparison", icon: Scale, description: "Compare legal documents for modifications." },
+            { name: "Page Size Detector", href: "/page-size-detector", icon: Scaling, description: "Analyze your PDF to find the exact dimensions of every page." },
             { name: "View PDF", href: "/view-pdf", icon: Eye, description: "Read and view PDF documents online." },
         ]
     },

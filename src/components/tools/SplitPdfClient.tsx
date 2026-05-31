@@ -10,6 +10,7 @@ import { usePDF } from "@/hooks/usePDF";
 import { PDFThumbnail } from "@/components/PDFThumbnail";
 import { Download, Scissors, Loader2 } from "lucide-react";
 import clsx from "clsx";
+import { VirtuosoGrid } from "react-virtuoso";
 
 export default function SplitPdfClient() {
     const [file, setFile] = useState<File | null>(null);
@@ -18,6 +19,7 @@ export default function SplitPdfClient() {
     const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [mode, setMode] = useState<'extract' | 'burst'>('extract');
+    const [lastSelectedIndex, setLastSelectedIndex] = useState<number | null>(null);
 
     const handleFileSelected = (files: File[]) => {
         if (files.length > 0) {
@@ -32,12 +34,32 @@ export default function SplitPdfClient() {
         accept: { "application/pdf": [".pdf"] },
     });
 
-    const togglePageSelection = (pageIndex: number) => {
-        setSelectedPages((prev) =>
-            prev.includes(pageIndex)
-                ? prev.filter((p) => p !== pageIndex)
-                : [...prev, pageIndex].sort((a, b) => a - b)
-        );
+    const togglePageSelection = (pageIndex: number, e?: React.MouseEvent) => {
+        if (e?.shiftKey && lastSelectedIndex !== null) {
+            const start = Math.min(lastSelectedIndex, pageIndex);
+            const end = Math.max(lastSelectedIndex, pageIndex);
+            
+            const isSelecting = !selectedPages.includes(pageIndex);
+            
+            setSelectedPages(prev => {
+                let newArr = [...prev];
+                for (let i = start; i <= end; i++) {
+                    if (isSelecting && !newArr.includes(i)) {
+                        newArr.push(i);
+                    } else if (!isSelecting && newArr.includes(i)) {
+                        newArr = newArr.filter(p => p !== i);
+                    }
+                }
+                return newArr.sort((a, b) => a - b);
+            });
+        } else {
+            setSelectedPages((prev) =>
+                prev.includes(pageIndex)
+                    ? prev.filter((p) => p !== pageIndex)
+                    : [...prev, pageIndex].sort((a, b) => a - b)
+            );
+        }
+        setLastSelectedIndex(pageIndex);
     };
 
     const selectAll = () => {
@@ -173,18 +195,39 @@ export default function SplitPdfClient() {
 
                             {pdfProxy && (
                                 <div className={clsx(
-                                    "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 mb-8",
                                     mode === 'burst' && "opacity-50 pointer-events-none grayscale"
                                 )}>
-                                    {Array.from({ length: pageCount }, (_, i) => (
-                                        <PDFThumbnail
-                                            key={i}
-                                            pdfProxy={pdfProxy}
-                                            pageIndex={i}
-                                            selected={selectedPages.includes(i)}
-                                            onToggle={() => togglePageSelection(i)}
-                                        />
-                                    ))}
+                                    <VirtuosoGrid
+                                        useWindowScroll
+                                        totalCount={pageCount}
+                                        overscan={200}
+                                        components={{
+                                            List: GridList,
+                                            Item: GridItem
+                                        }}
+                                        itemContent={(i) => (
+                                            <div
+                                                key={i}
+                                                className={clsx(
+                                                    "relative cursor-pointer border-2 transition-all w-full",
+                                                    selectedPages.includes(i)
+                                                        ? "border-[#F472B6]"
+                                                        : "border-black hover:border-[#F472B6]"
+                                                )}
+                                                onClick={(e) => togglePageSelection(i, e)}
+                                            >
+                                                <PDFThumbnail
+                                                    pdfProxy={pdfProxy}
+                                                    pageIndex={i}
+                                                    selected={selectedPages.includes(i)}
+                                                    hidePageLabel={true}
+                                                />
+                                                <div className="text-center py-1 bg-white border-t-2 border-black text-xs font-display">
+                                                    Page {i + 1}
+                                                </div>
+                                            </div>
+                                        )}
+                                    />
                                 </div>
                             )}
 
@@ -214,3 +257,25 @@ export default function SplitPdfClient() {
         </ToolPageWrapper>
     );
 }
+
+const GridList = React.forwardRef(({ style, children, ...props }: any, ref: any) => (
+    <div
+        ref={ref}
+        {...props}
+        style={{ ...style, display: "flex", flexWrap: "wrap", gap: "1rem" }}
+        className="mb-8"
+    >
+        {children}
+    </div>
+));
+GridList.displayName = "GridList";
+
+const GridItem = ({ children, ...props }: any) => (
+    <div
+        {...props}
+        className="w-[calc(50%-0.5rem)] sm:w-[calc(33.333%-0.66rem)] md:w-[calc(25%-0.75rem)] lg:w-[calc(20%-0.8rem)]"
+    >
+        {children}
+    </div>
+);
+GridItem.displayName = "GridItem";

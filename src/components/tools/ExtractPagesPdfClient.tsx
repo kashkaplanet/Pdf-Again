@@ -19,6 +19,7 @@ export default function ExtractPagesPdfClient() {
     const [selectedPages, setSelectedPages] = useState<Set<number>>(new Set());
     // Track order of selection for extraction
     const [selectedPageOrder, setSelectedPageOrder] = useState<number[]>([]);
+    const [lastSelectedIndex, setLastSelectedIndex] = useState<number | null>(null);
 
     const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -37,24 +38,55 @@ export default function ExtractPagesPdfClient() {
         accept: { "application/pdf": [".pdf"] },
     });
 
-    const togglePage = (index: number) => {
-        setSelectedPages(prev => {
-            const newSet = new Set(prev);
-            if (newSet.has(index)) {
-                newSet.delete(index);
-            } else {
-                newSet.add(index);
-            }
-            return newSet;
-        });
+    const togglePage = (index: number, e?: React.MouseEvent) => {
+        if (e?.shiftKey && lastSelectedIndex !== null) {
+            const start = Math.min(lastSelectedIndex, index);
+            const end = Math.max(lastSelectedIndex, index);
+            
+            // Determine if we are selecting or deselecting based on the target item
+            const isSelecting = !selectedPages.has(index);
 
-        setSelectedPageOrder(prev => {
-            if (prev.includes(index)) {
-                return prev.filter(p => p !== index);
-            } else {
-                return [...prev, index];
-            }
-        });
+            setSelectedPages(prev => {
+                const newSet = new Set(prev);
+                for (let i = start; i <= end; i++) {
+                    if (isSelecting) newSet.add(i);
+                    else newSet.delete(i);
+                }
+                return newSet;
+            });
+
+            setSelectedPageOrder(prev => {
+                let newOrder = [...prev];
+                for (let i = start; i <= end; i++) {
+                    if (isSelecting && !newOrder.includes(i)) {
+                        newOrder.push(i);
+                    } else if (!isSelecting && newOrder.includes(i)) {
+                        newOrder = newOrder.filter(p => p !== i);
+                    }
+                }
+                return newOrder;
+            });
+        } else {
+            setSelectedPages(prev => {
+                const newSet = new Set(prev);
+                if (newSet.has(index)) {
+                    newSet.delete(index);
+                } else {
+                    newSet.add(index);
+                }
+                return newSet;
+            });
+
+            setSelectedPageOrder(prev => {
+                if (prev.includes(index)) {
+                    return prev.filter(p => p !== index);
+                } else {
+                    return [...prev, index];
+                }
+            });
+        }
+        
+        setLastSelectedIndex(index);
     };
 
     const selectAll = () => {
@@ -215,6 +247,7 @@ export default function ExtractPagesPdfClient() {
                                                                                 pdfProxy={pdfProxy}
                                                                                 pageIndex={pageIndex}
                                                                                 width={100}
+                                                                                hidePageLabel={true}
                                                                             />
                                                                         )}
                                                                         <button
@@ -261,7 +294,7 @@ export default function ExtractPagesPdfClient() {
                                     itemContent={(index) => (
                                         <div
                                             key={index}
-                                            onClick={() => togglePage(index)}
+                                            onClick={(e) => togglePage(index, e)}
                                             className={clsx(
                                                 "relative cursor-pointer border-2 transition-all w-full",
                                                 selectedPages.has(index)
@@ -273,12 +306,9 @@ export default function ExtractPagesPdfClient() {
                                                 pdfProxy={pdfProxy}
                                                 pageIndex={index}
                                                 width={150}
+                                                selected={selectedPages.has(index)}
+                                                hidePageLabel={true}
                                             />
-                                            {selectedPages.has(index) && (
-                                                <div className="absolute top-2 right-2">
-                                                    <CheckCircle className="w-6 h-6 text-[#F472B6] bg-white rounded-full" />
-                                                </div>
-                                            )}
                                             <div className="text-center py-2 bg-white border-t-2 border-black text-sm font-display">
                                                 Page {index + 1}
                                             </div>

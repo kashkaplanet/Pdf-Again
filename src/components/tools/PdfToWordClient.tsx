@@ -38,22 +38,40 @@ export default function PdfToWordClient() {
         setIsConverting(true);
         setError(null);
 
-        const formData = new FormData();
-        formData.append("file", file);
-        formData.append("format", "docx");
-
         try {
-            const response = await fetch("/api/convert/pdf", {
-                method: "POST",
-                body: formData,
-            });
+            const arrayBuffer = await file.arrayBuffer();
+            
+            const pdfjsLib = await import("pdfjs-dist");
+            pdfjsLib.GlobalWorkerOptions.workerSrc = "/workers/pdf.worker.min.mjs";
 
-            if (!response.ok) {
-                const data = await response.json();
-                throw new Error(data.error || "Conversion failed");
+            const pdfDocument = await pdfjsLib.getDocument({ data: new Uint8Array(arrayBuffer) }).promise;
+            
+            const { Document, Packer, Paragraph, TextRun } = await import('docx');
+            let fullText = "";
+
+            for (let i = 1; i <= pdfDocument.numPages; i++) {
+                const page = await pdfDocument.getPage(i);
+                const textContent = await page.getTextContent();
+                const pageText = textContent.items.map((item: any) => item.str).join(' ');
+                fullText += pageText + "\n";
+                page.cleanup();
             }
 
-            const blob = await response.blob();
+            const lines = fullText.split(/\r?\n/);
+            const children = lines.map((line: string) =>
+                new Paragraph({
+                    children: [new TextRun(line)]
+                })
+            );
+
+            const doc = new Document({
+                sections: [{
+                    properties: {},
+                    children: children,
+                }],
+            });
+
+            const blob = await Packer.toBlob(doc);
             const url = window.URL.createObjectURL(blob);
             setConvertedUrl(url);
         } catch (err: any) {

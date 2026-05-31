@@ -9,6 +9,8 @@ import { usePDF } from "@/hooks/usePDF";
 import { PDFThumbnail } from "@/components/PDFThumbnail";
 import { PDFDocument, degrees } from "pdf-lib";
 import { Download, RotateCcw, RotateCw, Loader2 } from "lucide-react";
+import clsx from "clsx";
+import { VirtuosoGrid } from "react-virtuoso";
 
 export default function RotatePdfClient() {
     const [file, setFile] = useState<File | null>(null);
@@ -157,43 +159,53 @@ export default function RotatePdfClient() {
                     ) : (
                         <>
                             {pdfProxy && (
-                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 mb-8">
-                                    {Array.from({ length: pageCount }, (_, i) => (
-                                        <div key={i} className="flex flex-col items-center">
-                                            <div
-                                                style={{
-                                                    transform: `rotate(${rotations[i] || 0}deg)`,
-                                                    transition: 'transform 0.3s ease',
-                                                }}
-                                                className="border-2 border-black overflow-hidden"
-                                            >
-                                                <PDFThumbnail
-                                                    pdfProxy={pdfProxy}
-                                                    pageIndex={i}
-                                                    width={130}
-                                                />
-                                            </div>
-                                            <div className="flex items-center gap-1 mt-2">
-                                                <button
-                                                    onClick={() => rotatePageCCW(i)}
-                                                    className="p-2 bg-white border-2 border-black hover:bg-[#A78BFA] transition-colors"
-                                                    title="Rotate Left"
+                                <div>
+                                    <VirtuosoGrid
+                                        useWindowScroll
+                                        totalCount={pageCount}
+                                        overscan={200}
+                                        components={{
+                                            List: GridList,
+                                            Item: GridItem
+                                        }}
+                                        itemContent={(i) => (
+                                            <div key={i} className="flex flex-col items-center w-full">
+                                                <div
+                                                    style={{
+                                                        transform: `rotate(${rotations[i] || 0}deg)`,
+                                                        transition: 'transform 0.3s ease',
+                                                    }}
+                                                    className="border-2 border-black overflow-hidden"
                                                 >
-                                                    <RotateCcw className="w-4 h-4" />
-                                                </button>
-                                                <span className="text-sm font-display w-8 text-center">
-                                                    {i + 1}
-                                                </span>
-                                                <button
-                                                    onClick={() => rotatePageCW(i)}
-                                                    className="p-2 bg-white border-2 border-black hover:bg-[#A78BFA] transition-colors"
-                                                    title="Rotate Right"
-                                                >
-                                                    <RotateCw className="w-4 h-4" />
-                                                </button>
+                                                    <PDFThumbnail
+                                                        pdfProxy={pdfProxy}
+                                                        pageIndex={i}
+                                                        width={130}
+                                                        hidePageLabel={true}
+                                                    />
+                                                </div>
+                                                <div className="flex items-center gap-1 mt-2">
+                                                    <button
+                                                        onClick={() => rotatePageCCW(i)}
+                                                        className="p-2 bg-white border-2 border-black hover:bg-[#A78BFA] transition-colors"
+                                                        title="Rotate Left"
+                                                    >
+                                                        <RotateCcw className="w-4 h-4" />
+                                                    </button>
+                                                    <span className="text-sm font-display w-8 text-center">
+                                                        {i + 1}
+                                                    </span>
+                                                    <button
+                                                        onClick={() => rotatePageCW(i)}
+                                                        className="p-2 bg-white border-2 border-black hover:bg-[#A78BFA] transition-colors"
+                                                        title="Rotate Right"
+                                                    >
+                                                        <RotateCw className="w-4 h-4" />
+                                                    </button>
+                                                </div>
                                             </div>
-                                        </div>
-                                    ))}
+                                        )}
+                                    />
                                 </div>
                             )}
 
@@ -220,3 +232,25 @@ export default function RotatePdfClient() {
         </ToolPageWrapper>
     );
 }
+
+const GridList = React.forwardRef(({ style, children, ...props }: any, ref: any) => (
+    <div
+        ref={ref}
+        {...props}
+        style={{ ...style, display: "flex", flexWrap: "wrap", gap: "1rem" }}
+        className="mb-8"
+    >
+        {children}
+    </div>
+));
+GridList.displayName = "GridList";
+
+const GridItem = ({ children, ...props }: any) => (
+    <div
+        {...props}
+        className="w-[calc(50%-0.5rem)] sm:w-[calc(33.333%-0.66rem)] md:w-[calc(25%-0.75rem)] lg:w-[calc(20%-0.8rem)]"
+    >
+        {children}
+    </div>
+);
+GridItem.displayName = "GridItem";

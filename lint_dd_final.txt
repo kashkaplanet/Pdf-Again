@@ -1,8 +1,0 @@
-
-E:\backup\pdf_pdf8\src\components\DragDropOverlay.tsx
-  59:17  error  'typeGroup' is never reassigned. Use 'const' instead  prefer-const
-  59:17  error  'typeGroup' is assigned a value but never used        @typescript-eslint/no-unused-vars
-
-✖ 2 problems (2 errors, 0 warnings)
-  1 error and 0 warnings potentially fixable with the `--fix` option.
-

@@ -80,18 +80,20 @@ export default function JpgToBinaryClient() {
             icon={Shield}
             color="indigo"
         >
-            <RetroCard className="max-w-2xl mx-auto py-12" variant="default">
-                <div className="mb-8">
-                    {!file ? (
-                        <RetroFileUploader
-                            onFilesSelected={handleFilesSelected}
-                            accept={{ "image/jpeg": [".jpg", ".jpeg"] }}
-                            multiple={false}
-                            title="Upload JPG"
-                            description="Select a .jpg or .jpeg file to convert to binary text"
-                            variant="indigo"
-                        />
-                    ) : (
+            {!file ? (
+                <RetroCard variant="default">
+                    <RetroFileUploader
+                        onFilesSelected={handleFilesSelected}
+                        accept={{ "image/jpeg": [".jpg", ".jpeg"] }}
+                        multiple={false}
+                        title="Upload JPG"
+                        description="Select a .jpg or .jpeg file to convert to binary text"
+                        variant="indigo"
+                    />
+                </RetroCard>
+            ) : (
+                <RetroCard variant="default">
+                    <div className="mb-8">
                         <RetroFileItem
                             name={file.name}
                             size={(file.size / 1024).toFixed(1) + " KB"}
@@ -99,49 +101,49 @@ export default function JpgToBinaryClient() {
                             onRemove={handleRemoveFile}
                             color="indigo"
                         />
-                    )}
-                </div>
-
-                {error && (
-                    <div className="mb-6 p-4 border-2 border-black bg-red-100 text-red-800 font-display flex items-center gap-2">
-                        <AlertTriangle className="w-5 h-5" />
-                        {error}
                     </div>
-                )}
 
-                <div className="mt-8 flex gap-4">
-                    {convertedUrl ? (
-                        <>
+                    {error && (
+                        <div className="mb-6 p-4 border-2 border-black bg-red-100 text-red-800 font-display flex items-center gap-2">
+                            <AlertTriangle className="w-5 h-5" />
+                            {error}
+                        </div>
+                    )}
+
+                    <div className="mt-8 flex gap-4">
+                        {convertedUrl ? (
+                            <>
+                                <RetroActionButton
+                                    label="Download .bin.txt"
+                                    isProcessing={false}
+                                    processingText=""
+                                    onClick={handleDownload}
+                                    color="indigo"
+                                    icon={<Download className="w-5 h-5" />}
+                                />
+                                <RetroActionButton
+                                    label="Convert Another"
+                                    isProcessing={false}
+                                    processingText=""
+                                    onClick={handleRemoveFile}
+                                    color="default"
+                                    icon={<ArrowRight className="w-5 h-5" />}
+                                />
+                            </>
+                        ) : (
                             <RetroActionButton
-                                label="Download .bin.txt"
-                                isProcessing={false}
-                                processingText=""
-                                onClick={handleDownload}
+                                label="Convert to Binary"
+                                isProcessing={isConverting}
+                                processingText="Converting..."
+                                onClick={handleConvert}
+                                disabled={!file}
                                 color="indigo"
-                                icon={<Download className="w-5 h-5" />}
-                            />
-                            <RetroActionButton
-                                label="Convert Another"
-                                isProcessing={false}
-                                processingText=""
-                                onClick={handleRemoveFile}
-                                color="default"
                                 icon={<ArrowRight className="w-5 h-5" />}
                             />
-                        </>
-                    ) : (
-                        <RetroActionButton
-                            label="Convert to Binary"
-                            isProcessing={isConverting}
-                            processingText="Converting..."
-                            onClick={handleConvert}
-                            disabled={!file}
-                            color="indigo"
-                            icon={<ArrowRight className="w-5 h-5" />}
-                        />
-                    )}
-                </div>
-            </RetroCard>
+                        )}
+                    </div>
+                </RetroCard>
+            )}
         </ToolPageWrapper>
     );
 }

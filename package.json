@@ -30,6 +30,7 @@
     "file2html-image": "^0.1.1",
     "file2html-odf": "^0.2.0",
     "framer-motion": "^12.31.0",
+    "gifenc": "^1.0.3",
     "glob": "^13.0.3",
     "html2pdf.js": "^0.14.0",
     "jszip": "^3.10.1",
@@ -71,6 +72,9 @@
     "typescript": "^5"
   },
   "overrides": {
-    "minimatch": "^10.2.1"
+    "minimatch": "^10.2.1",
+    "postcss": "^8.5.15",
+    "serialize-javascript": "^7.0.5",
+    "uuid": "^11.1.1"
   }
 }

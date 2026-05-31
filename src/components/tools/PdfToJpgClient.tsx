@@ -51,27 +51,46 @@ export default function PdfToJpgClient({
         setIsConverting(true);
         setError(null);
 
-        const formData = new FormData();
-        formData.append("file", file);
-        formData.append("format", "images");
-        formData.append("image_format", outputFormat);
-
-        // Use dedicated API route for webp
-        const apiUrl = outputFormat === "webp" ? "/api/pdf-to-webp" : "/api/convert/pdf";
-
         try {
-            const response = await fetch(apiUrl, {
-                method: "POST",
-                body: formData,
-            });
+            const JSZip = (await import('jszip')).default;
+            const arrayBuffer = await file.arrayBuffer();
+            
+            const pdfjsLib = await import("pdfjs-dist");
+            pdfjsLib.GlobalWorkerOptions.workerSrc = "/workers/pdf.worker.min.mjs";
 
-            if (!response.ok) {
-                const data = await response.json();
-                throw new Error(data.error || "Conversion failed");
+            const pdfDocument = await pdfjsLib.getDocument({ data: new Uint8Array(arrayBuffer) }).promise;
+            const zip = new JSZip();
+
+            for (let i = 1; i <= pdfDocument.numPages; i++) {
+                const page = await pdfDocument.getPage(i);
+                const viewport = page.getViewport({ scale: 1.5 });
+
+                const canvas = document.createElement('canvas');
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
+                const ctx = canvas.getContext("2d");
+                if (!ctx) continue;
+
+                await page.render({
+                    canvasContext: ctx as any,
+                    viewport: viewport,
+                } as any).promise;
+
+                const mimeType = outputFormat === "webp" ? "image/webp" : "image/jpeg";
+                const extension = outputFormat === "webp" ? "webp" : "jpg";
+
+                const blob = await new Promise<Blob | null>(resolve => {
+                    canvas.toBlob(b => resolve(b), mimeType, 0.9);
+                });
+
+                if (blob) {
+                    zip.file(`page_${i}.${extension}`, blob);
+                }
+                page.cleanup();
             }
 
-            const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
+            const zipBlob = await zip.generateAsync({ type: "blob" });
+            const url = window.URL.createObjectURL(zipBlob);
             setConvertedUrl(url);
         } catch (err: any) {
             setError(err.message || "An error occurred during conversion.");
@@ -98,18 +117,20 @@ export default function PdfToJpgClient({
             icon={FileImage}
             color={variant}
         >
-            <RetroCard className="max-w-xl mx-auto py-12" variant="default">
-                <div className="mb-8">
-                    {!file ? (
-                        <RetroFileUploader
-                            onFilesSelected={handleFilesSelected}
-                            accept={{ "application/pdf": [".pdf"] }}
-                            multiple={false}
-                            title="Upload PDF"
-                            description="Select a .pdf file to convert"
-                            variant={variant}
-                        />
-                    ) : (
+            {!file ? (
+                <RetroCard variant="default">
+                    <RetroFileUploader
+                        onFilesSelected={handleFilesSelected}
+                        accept={{ "application/pdf": [".pdf"] }}
+                        multiple={false}
+                        title="Upload PDF"
+                        description="Select a .pdf file to convert"
+                        variant={variant}
+                    />
+                </RetroCard>
+            ) : (
+                <RetroCard variant="default">
+                    <div className="mb-8">
                         <RetroFileItem
                             name={file.name}
                             size={(file.size / 1024).toFixed(1) + " KB"}
@@ -117,49 +138,51 @@ export default function PdfToJpgClient({
                             onRemove={handleRemoveFile}
                             color={variant}
                         />
-                    )}
-                </div>
-
-                {error && (
-                    <div className="mb-6 p-4 border-2 border-black bg-red-100 text-red-800 font-display flex items-center gap-2">
-                        <AlertTriangle className="w-5 h-5" />
-                        {error}
                     </div>
-                )}
 
-                <div className="mt-8 flex gap-4">
-                    {convertedUrl ? (
-                        <>
-                            <RetroActionButton
-                                label={`Download ${outputFormat.toUpperCase()} (.zip)`}
-                                isProcessing={false}
-                                processingText=""
-                                onClick={handleDownload}
-                                color={variant}
-                                icon={<Download className="w-5 h-5" />}
-                            />
-                            <RetroActionButton
-                                label="Convert Another"
-                                isProcessing={false}
-                                processingText=""
-                                onClick={handleRemoveFile}
-                                color="default"
-                                icon={<ArrowRight className="w-5 h-5" />}
-                            />
-                        </>
-                    ) : (
-                        <RetroActionButton
-                            label={`Convert to ${outputFormat.toUpperCase()}`}
-                            isProcessing={isConverting}
-                            processingText="Converting..."
-                            onClick={handleConvert}
-                            disabled={!file}
-                            color={variant}
-                            icon={<ArrowRight className="w-5 h-5" />}
-                        />
+                    {error && (
+                        <div className="mb-6 p-4 border-2 border-black bg-red-100 text-red-800 font-display flex items-center gap-2">
+                            <AlertTriangle className="w-5 h-5" />
+                            {error}
+                        </div>
                     )}
-                </div>
-            </RetroCard>
+
+                    {file && (
+                        <div className="mt-8 flex gap-4">
+                            {convertedUrl ? (
+                                <>
+                                    <RetroActionButton
+                                        label={`Download ${outputFormat.toUpperCase()} (.zip)`}
+                                        isProcessing={false}
+                                        processingText=""
+                                        onClick={handleDownload}
+                                        color={variant}
+                                        icon={<Download className="w-5 h-5" />}
+                                    />
+                                    <RetroActionButton
+                                        label="Convert Another"
+                                        isProcessing={false}
+                                        processingText=""
+                                        onClick={handleRemoveFile}
+                                        color="default"
+                                        icon={<ArrowRight className="w-5 h-5" />}
+                                    />
+                                </>
+                            ) : (
+                                <RetroActionButton
+                                    label={`Convert to ${outputFormat.toUpperCase()}`}
+                                    isProcessing={isConverting}
+                                    processingText="Converting..."
+                                    onClick={handleConvert}
+                                    disabled={!file}
+                                    color={variant}
+                                    icon={<ArrowRight className="w-5 h-5" />}
+                                />
+                            )}
+                        </div>
+                    )}
+                </RetroCard>
+            )}
         </ToolPageWrapper>
     );
 }
